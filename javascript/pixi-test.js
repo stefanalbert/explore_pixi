@@ -24,7 +24,7 @@ function handle_touch( button_name, handler ) {
 };
 
 function init_pixi(){
-	let app = new PIXI.Application( {width: 640, height: 800} );
+	let app = new PIXI.Application( {width: 640, height: 832} );
 
 	app.renderer.backgroundColor = 25;
 	document.getElementById("game_display").appendChild( app.view );
@@ -81,14 +81,29 @@ function init_pixi(){
 		}
 	};
 
+	function add_cell( x, y ) {
+		let top_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+		let bottom_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+		top_border.x = x * 64;
+		top_border.y = y * 64;
+
+		bottom_border.x = top_border.x;
+		bottom_border.y = top_border.y + 60;
+		app.stage.addChild(top_border);
+		app.stage.addChild(bottom_border);
+	
+	};
+
 	function add_horizontal_border() {
-		let cell = 0;
-		while( cell<10) {
-			let cur_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
-			cur_border.x = cell * 64;
-			cur_border.y = 0;
-			app.stage.addChild(cur_border);
-			cell = cell + 1;
+		let x  = 0;
+		let y  = 0;
+		while( y<13 ) { 
+			while( x<10) {
+				add_cell( x, y );
+				x = x + 1;
+			};
+			y = y + 1;
+			x = 0;
 		};
 	};
 
