@@ -24,9 +24,9 @@ function handle_touch( button_name, handler ) {
 };
 
 function init_pixi(){
-	let app = new PIXI.Application( {width: 400, height: 800} );
+	let app = new PIXI.Application( {width: 640, height: 800} );
 
-	app.renderer.backgroundColor = 0x061639;
+	app.renderer.backgroundColor = 25;
 	document.getElementById("game_display").appendChild( app.view );
 
 	var  game_controller = {
@@ -59,26 +59,45 @@ function init_pixi(){
 	handle_touch("left_button", game_controller.set_left);
 	handle_touch("right_button", game_controller.set_right);
 
-
-	PIXI.loader.add( "images/cat.png").load(
-		function(){
-			let cat = new PIXI.Sprite(PIXI.loader.resources["images/cat.png"].texture );
-			app.stage.addChild(cat);
-			app.ticker.add(delta => gameLoop(delta));
-			function gameLoop(delta){
-				if(game_controller.up){
-					cat.y=cat.y - 1;
-				};
-				if(game_controller.down) {
-					cat.y = cat.y + 1;
-				};
-				if(game_controller.left){
-					cat.x=cat.x - 1;
-				};
-				if(game_controller.right){
-					cat.x=cat.x + 1;
-				}
+	function add_cat() {
+		let cat = new PIXI.Sprite(PIXI.loader.resources["images/cat.png"].texture );
+		cat.x = 10;
+		cat.y = 10;
+		app.stage.addChild(cat);
+		app.ticker.add(delta => gameLoop(delta));
+		function gameLoop(delta){
+			if(game_controller.up){
+				cat.y=cat.y - 1;
+			};
+			if(game_controller.down) {
+				cat.y = cat.y + 1;
+			};
+			if(game_controller.left){
+				cat.x=cat.x - 1;
+			};
+			if(game_controller.right){
+				cat.x=cat.x + 1;
 			}
-		})
+		}
+	};
+
+	function add_horizontal_border() {
+		let cell = 0;
+		while( cell<10) {
+			let cur_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+			cur_border.x = cell * 64;
+			cur_border.y = 0;
+			app.stage.addChild(cur_border);
+			cell = cell + 1;
+		};
+	};
+
+	PIXI.loader.add( ["images/top.png", "images/cat.png"]).load(
+		function() {
+			add_horizontal_border();
+			add_cat();
+		}
+	);
+
 }
 
