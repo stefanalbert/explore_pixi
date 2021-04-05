@@ -84,14 +84,25 @@ function init_pixi(){
 	function add_cell( x, y ) {
 		let top_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
 		let bottom_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+		let left_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
+		let right_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
 		top_border.x = x * 64;
 		top_border.y = y * 64;
 
 		bottom_border.x = top_border.x;
 		bottom_border.y = top_border.y + 60;
+
+		left_border.x = x*64;
+		left_border.y = y*64;
+
+		right_border.x = left_border.x + 60;
+		right_border.y = left_border.y;
+
 		app.stage.addChild(top_border);
 		app.stage.addChild(bottom_border);
-	
+	        app.stage.addChild(left_border);
+		app.stage.addChild(right_border);
+
 	};
 
 	function add_horizontal_border() {
@@ -107,7 +118,7 @@ function init_pixi(){
 		};
 	};
 
-	PIXI.loader.add( ["images/top.png", "images/cat.png"]).load(
+	PIXI.loader.add( ["images/top.png", "images/cat.png", "images/left.png"]).load(
 		function() {
 			add_horizontal_border();
 			add_cat();
