@@ -181,15 +181,10 @@ function init_pixi(cells){
 	};
 
 	function add_border(cells) {
-		let x  = 0;
-		let y  = 0;
-		while( y<13 ) { 
-			while( x<10) {
+		for( y=0;y<cells.y_max;y++ ) { 
+			for(x=0; x<cells.x_max; x++ ) {
 				add_cell( x, y, cells );
-				x = x + 1;
 			};
-			y = y + 1;
-			x = 0;
 		};
 	};
 
