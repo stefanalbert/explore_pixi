@@ -1,3 +1,4 @@
+
 function hello(){
 	alert("Hi");
 }
@@ -23,10 +24,77 @@ function handle_touch( button_name, handler ) {
 				false );
 };
 
-function init_pixi(){
+
+var maze = ["+-+-+-+-+-+-+-+-+-+-+",
+	    "|***|*|*|*|*|*|*|*|*|",
+	    "+-+ +-+-+-+-+-+-+-+-+",
+	    "| |   | | | | | | | |",
+	    "+-+-+ +-+-+-+-+-+-+-+",
+	    "| | |   | | | | | | |",
+	    "+-+-+-+ +-+-+-+-+-+-+",
+	    "| | | |   | | | | | |",
+	    "+-+-+-+-+ +-+-+-+-+-+",
+	    "| | | | |   | | | | |",
+	    "+-+-+-+-+-+ +-+-+-+-+",
+	    "| | | | | |     | | |",
+	    "+-+-+-+-+-+-+-+ +-+-+",
+            "| | | | | |     | | |",
+	    "+-+-+-+-+-+ +-+-+-+-+",
+	    "| | | | |   | | | | |",
+	    "+-+-+-+-+ +-+-+-+-+-+",
+	    "| | | |   | | | | | |",
+	    "+-+-+-+ +-+-+-+-+-+-+",
+	    "| | | |     | | | | |",
+	    "+-+-+-+-+-+ +-+-+-+-+",
+	    "| |         | | | | |",
+	    "+-+ +-+-+-+-+-+-+-+-+",
+	    "| |     | | | | | | |",
+	    "+-+-+-+ +-+-+-+-+-+-+",
+	    "| | | |             |",
+	    "+-+-+-+-+-+-+-+-+-+-+"
+];
+
+function create_cells( maze ) {
+
+	function create_cell() {
+		return {left:false,
+		        top:false,
+			right:false,
+			bottom:false };
+	};
+
+	function init_cell( cell, x, y, maze ) {
+		cell.left = maze[(y*2)+1].charAt(x*2) =='|';
+		cell.right = maze[(y*2)+1].charAt((x+1)*2) == '|';
+                cell.top = maze[y*2].charAt(x*2+1) == '-';
+		cell.bottom = maze[(y+1)*2].charAt(x*2+1)=='-';
+		return cell;
+	};
+
+	function create_cell_list( maze ) {
+		let result = {
+			x_max:Math.floor(maze[0].length /2),
+			y_max:Math.floor(maze.length/2),
+			data:[]
+		};
+
+		for( j=0; j<result.y_max; j++ ) {
+			for( i=0; i<result.x_max; i++ ){
+				result.data.push( init_cell(create_cell(), i, j, maze) );
+			};
+		};
+		return result;
+	};
+	return create_cell_list(maze);	
+};
+
+function start_app() {
+	init_pixi(create_cells(maze));
+};
+
+function init_pixi(cells){
 	let app = new PIXI.Application( {width: 640, height: 832} );
 
-	app.renderer.backgroundColor = 25;
 	document.getElementById("game_display").appendChild( app.view );
 
 	var  game_controller = {
@@ -47,7 +115,6 @@ function init_pixi(){
 			me.left=value;
 		},
 		set_right: function(value){
-			log(me.right);
 			me.right=value;
 		}
 	};
@@ -81,36 +148,44 @@ function init_pixi(){
 		}
 	};
 
-	function add_cell( x, y ) {
-		let top_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
-		let bottom_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
-		let left_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
-		let right_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
-		top_border.x = x * 64;
-		top_border.y = y * 64;
+	function add_cell( x, y, cells ) {
+		let cell_model = cells.data[(y*cells.x_max) + x ];
+		if(cell_model.top ) {
+			let top_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+			top_border.x = x * 64;
+			top_border.y = y * 64;
+			app.stage.addChild(top_border);
+		};
 
-		bottom_border.x = top_border.x;
-		bottom_border.y = top_border.y + 60;
+		if( cell_model.bottom ){
+			let bottom_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
+			bottom_border.x = x * 64;
+			bottom_border.y = y * 64 + 60;
+			app.stage.addChild(bottom_border);
+		};
 
-		left_border.x = x*64;
-		left_border.y = y*64;
+		if( cell_model.left ) {
+			let left_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
+			left_border.x = x*64;
+			left_border.y = y*64;
+			app.stage.addChild(left_border);
+		};
 
-		right_border.x = left_border.x + 60;
-		right_border.y = left_border.y;
-
-		app.stage.addChild(top_border);
-		app.stage.addChild(bottom_border);
-	        app.stage.addChild(left_border);
-		app.stage.addChild(right_border);
+		if( cell_model.right ){
+			let right_border = new PIXI.Sprite( PIXI.loader.resources["images/left.png"].texture);
+			right_border.x = x*64 + 60;
+			right_border.y = y*64;
+			app.stage.addChild(right_border);
+		};
 
 	};
 
-	function add_horizontal_border() {
+	function add_border(cells) {
 		let x  = 0;
 		let y  = 0;
 		while( y<13 ) { 
 			while( x<10) {
-				add_cell( x, y );
+				add_cell( x, y, cells );
 				x = x + 1;
 			};
 			y = y + 1;
@@ -120,10 +195,9 @@ function init_pixi(){
 
 	PIXI.loader.add( ["images/top.png", "images/cat.png", "images/left.png"]).load(
 		function() {
-			add_horizontal_border();
+			add_border(cells);
 			add_cat();
 		}
 	);
-
 }
 
