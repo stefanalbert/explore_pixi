@@ -126,29 +126,35 @@ function init_pixi(cells){
 	handle_touch("left_button", game_controller.set_left);
 	handle_touch("right_button", game_controller.set_right);
 
-	function add_cat() {
-		let cat = new PIXI.Sprite(PIXI.loader.resources["images/cat.png"].texture );
-		cat.x = 10;
-		cat.y = 10;
-		app.stage.addChild(cat);
+	function add_chicken() {
+		let chicken = new PIXI.Sprite(PIXI.loader.resources["images/chicken.png"].texture );
+		chicken.x = 10;
+		chicken.y = 10;
+		app.stage.addChild(chicken);
 		app.ticker.add(delta => gameLoop(delta));
 		function gameLoop(delta){
 			if(game_controller.up){
-				cat.y=cat.y - 1;
+				chicken.y=chicken.y - 1;
 			};
 			if(game_controller.down) {
-				cat.y = cat.y + 1;
+				chicken.y = chicken.y + 1;
 			};
 			if(game_controller.left){
-				cat.x=cat.x - 1;
+				chicken.x=chicken.x - 1;
 			};
 			if(game_controller.right){
-				cat.x=cat.x + 1;
+				chicken.x=chicken.x + 1;
 			}
 		}
 	};
 
 	function add_cell( x, y, cells ) {
+
+		let background = new PIXI.Sprite( PIXI.loader.resources["images/background.png"].texture);
+		background.x = x*64;
+		background.y = y*64;
+		app.stage.addChild(background);
+
 		let cell_model = cells.data[(y*cells.x_max) + x ];
 		if(cell_model.top ) {
 			let top_border = new PIXI.Sprite( PIXI.loader.resources["images/top.png"].texture );
@@ -188,10 +194,10 @@ function init_pixi(cells){
 		};
 	};
 
-	PIXI.loader.add( ["images/top.png", "images/cat.png", "images/left.png"]).load(
+	PIXI.loader.add( ["images/top.png", "images/chicken.png", "images/left.png", "images/background.png"]).load(
 		function() {
 			add_border(cells);
-			add_cat();
+			add_chicken();
 		}
 	);
 }
