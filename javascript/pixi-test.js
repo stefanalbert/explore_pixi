@@ -71,11 +71,86 @@ function create_cells( maze ) {
 		return cell;
 	};
 
+	/*
+	 *	Create a cell list based on the data in the maze. The cell list is
+	 *      list of cell objects, each cell object represents a cell in the maze 
+	 *      it contains information about the cell's borders. The cell list
+	 *      contains the cells ordered by rows. This means, the first row of
+	 *      cells comes first, then the second row and so on.
+	 *      This means, the cell in position x,y in the maze is stored at
+	 *      position y*x_max + x in the cell list.
+	 *
+	 *      @oaram maze	The maze that should be converted into a cell list.
+	 *      @return The resulting cell list.
+	 */ 
 	function create_cell_list( maze ) {
 		let result = {
 			x_max:Math.floor(maze[0].length /2),
 			y_max:Math.floor(maze.length/2),
-			data:[]
+			data:[],
+			/*
+			 * Determines if a position of a sprite, which is
+			 * given by the x,y pair of input parameters is valid.
+			 * A position is valid if it either positions a sprite
+			 * entirely in a cell, or if the sprite is positioned 
+			 * in more than one cell, then those cells should not
+			 * have a border between them according to the cell
+			 * data. It is assumed that the width and height of
+			 * the cell is the same as the width and height of
+			 * the sprite, namely 64.
+			 *
+			 * Deterimining is a position is valid works as
+			 * follows:
+			 *
+			 * 1. Find the cell where the x,y position is
+			 *    located:
+			 *    	cell_x = x div 64
+			 *     	cell_y = y div 64
+			 *     	cell = data[ cell_y * x_max + cell_x ]
+			 * 2. Check if either the x position is at the left hand
+			 *    side of the cell or if it is not that the cell has
+			 *    no right border.
+			 *    x_pos = x mod 64
+			 *    if x_pos != 0:
+			 *    	!cell.right
+			 * 3. Check if either y position is at the top of the
+			 *    cell or, if it is not, that the cell has no
+			 *    bottom border.
+			 *    y_pos = y mod 64
+			 *    if y_pos != 0:
+			 *    	!cell.bottom
+			 * 4. Return true if both checks (2 and 3 ) pass, and
+			 *    false if at least one of them fails.
+			 *
+			 * @param x The x position of the top left corner of the 
+			 *          sprite on the screen.
+			 * @param y The y position of the top left corner of the
+			 *          sprite on the screen.
+			 *
+			 * @return True if the position of the sprite is valid 
+			 *         according to the above rules, and False, if 
+			 *         the position is not valid.
+			 */ 
+			is_valid_position:function(x,y) {
+				let result = ( x>=0 ) && (y>=0);
+				if( result ){
+					let cell_x = Math.floor( x/64);
+					let cell_y = Math.floor( y/64);
+					let cur_cell = this.data[ cell_y*this.x_max + cell_x];
+				
+					let x_pos = x%64;
+					if( x_pos != 0 ) {
+						result = !cur_cell.right;
+					}
+					if( result ){
+						let y_pos = y%64;
+						if( y_pos != 0 ){
+							result = !cur_cell.bottom;
+						}
+					}
+				}
+				return result;
+			}
 		};
 
 		for( j=0; j<result.y_max; j++ ) {
@@ -126,24 +201,30 @@ function init_pixi(cells){
 	handle_touch("left_button", game_controller.set_left);
 	handle_touch("right_button", game_controller.set_right);
 
-	function add_chicken() {
+	function add_chicken(cells) {
 		let chicken = new PIXI.Sprite(PIXI.loader.resources["images/chicken.png"].texture );
-		chicken.x = 10;
-		chicken.y = 10;
+		chicken.x = 0;
+		chicken.y = 0;
 		app.stage.addChild(chicken);
 		app.ticker.add(delta => gameLoop(delta));
 		function gameLoop(delta){
+			let new_x = chicken.x;
+			let new_y = chicken.y;
 			if(game_controller.up){
-				chicken.y=chicken.y - 1;
+				new_y=new_y - 1;
 			};
 			if(game_controller.down) {
-				chicken.y = chicken.y + 1;
+				new_y= new_y + 1;
 			};
 			if(game_controller.left){
-				chicken.x=chicken.x - 1;
+				new_x=new_x - 1;
 			};
 			if(game_controller.right){
-				chicken.x=chicken.x + 1;
+				new_x=new_x + 1;
+			}
+			if( cells.is_valid_position(new_x, new_y) ){
+				chicken.x = new_x;
+				chicken.y = new_y;
 			}
 		}
 	};
@@ -197,7 +278,7 @@ function init_pixi(cells){
 	PIXI.loader.add( ["images/top.png", "images/chicken.png", "images/left.png", "images/background.png"]).load(
 		function() {
 			add_border(cells);
-			add_chicken();
+			add_chicken(cells);
 		}
 	);
 }
